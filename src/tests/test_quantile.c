@@ -1,6 +1,5 @@
 #include "../util/quantile.h"
 #include "../buffer.h"
-#include "../rmutil/alloc.h"
 #include "test_util.h"
 #include <stdint.h>
 #include <assert.h>
@@ -13,7 +12,7 @@ static size_t numInput;
 
 static int testBasic() {
   double quantiles[] = {0.50, 0.90, 0.99};
-  QuantStream *stream = NewQuantileStream(quantiles, 3, 500);
+  QuantStream *stream = NewQuantileStream(quantiles, 0, 500);
   for (size_t ii = 0; ii < numInput; ++ii) {
     QS_Insert(stream, input[ii]);
   }
@@ -29,9 +28,7 @@ static int testBasic() {
 }
 
 TEST_MAIN({
-  RMUTil_InitAlloc();
-
-  fp = fopen("./quantile_data.txt", "rb");
+  fp = fopen("./tests/quantile_data.txt", "rb");
   assert(fp);
   Buffer_Init(&buf, 4096);
   BufferWriter bw = NewBufferWriter(&buf);

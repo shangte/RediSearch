@@ -5,9 +5,7 @@
 #include <float.h>
 #include <assert.h>
 #include <stdio.h>
-#include "util/block_alloc.h"
 #include "quantile.h"
-#include "rmalloc.h"
 
 typedef struct Sample {
   // Variables are named per the paper
@@ -150,7 +148,7 @@ static Sample *QS_NewSample(QuantStream *stream) {
     memset(ret, 0, sizeof(*ret));
     return ret;
   } else {
-    return rm_calloc(1, sizeof(Sample));
+    return calloc(1, sizeof(Sample));
   }
 }
 
@@ -274,36 +272,36 @@ double QS_Query(QuantStream *stream, double q) {
 }
 
 QuantStream *NewQuantileStream(const double *quantiles, size_t numQuantiles, size_t bufferLength) {
-  QuantStream *ret = rm_calloc(1, sizeof(QuantStream));
+  QuantStream *ret = calloc(1, sizeof(QuantStream));
   if ((ret->numQuantiles = numQuantiles)) {
-    ret->quantiles = rm_calloc(numQuantiles, sizeof(*quantiles));
+    ret->quantiles = calloc(numQuantiles, sizeof(*quantiles));
     memcpy(ret->quantiles, quantiles, sizeof(*quantiles) * numQuantiles);
   }
   ret->bufferCap = bufferLength;
-  ret->buffer = rm_malloc(bufferLength * sizeof(*ret->buffer));
+  ret->buffer = malloc(bufferLength * sizeof(*ret->buffer));
   return ret;
 }
 
 void QS_Free(QuantStream *qs) {
-  rm_free(qs->quantiles);
-  rm_free(qs->buffer);
+  free(qs->quantiles);
+  free(qs->buffer);
 
   // Chain freeing the pools!
 
   Sample *cur = qs->firstSample;
   while (cur) {
     Sample *next = cur->next;
-    rm_free(cur);
+    free(cur);
     cur = next;
   }
 
   cur = qs->pool;
   while (cur) {
     Sample *next = cur->next;
-    rm_free(cur);
+    free(cur);
     cur = next;
   }
-  rm_free(qs);
+  free(qs);
 }
 
 void QS_Dump(const QuantStream *stream, FILE *fp) {

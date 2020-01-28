@@ -1,5 +1,4 @@
 #include "buffer.h"
-#include "rmalloc.h"
 #include <assert.h>
 #include <sys/param.h>
 
@@ -8,7 +7,7 @@ void Buffer_Grow(Buffer *buf, size_t extraLen) {
     buf->cap += MIN(1 + buf->cap / 5, 1024 * 1024);
   } while (buf->offset + extraLen > buf->cap);
 
-  buf->data = rm_realloc(buf->data, buf->cap);
+  buf->data = realloc(buf->data, buf->cap);
 }
 
 /**
@@ -21,10 +20,10 @@ size_t Buffer_Truncate(Buffer *b, size_t newlen) {
 
   // we might have an empty buffer, in this case we set the data to NULL and free it
   if (newlen == 0) {
-    rm_free(b->data);
+    free(b->data);
     b->data = NULL;
   } else {
-    b->data = rm_realloc(b->data, newlen);
+    b->data = realloc(b->data, newlen);
   }
   b->cap = newlen;
   return newlen;
@@ -44,11 +43,11 @@ BufferReader NewBufferReader(Buffer *b) {
 void Buffer_Init(Buffer *b, size_t cap) {
   b->cap = cap;
   b->offset = 0;
-  b->data = rm_malloc(cap);
+  b->data = malloc(cap);
 }
 
 Buffer *Buffer_Wrap(char *data, size_t len) {
-  Buffer *buf = rm_malloc(sizeof(Buffer));
+  Buffer *buf = malloc(sizeof(Buffer));
   buf->cap = len;
   buf->offset = 0;
   buf->data = data;
@@ -56,7 +55,7 @@ Buffer *Buffer_Wrap(char *data, size_t len) {
 }
 
 void Buffer_Free(Buffer *buf) {
-  rm_free(buf->data);
+  free(buf->data);
 }
 
 /**
